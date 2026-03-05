@@ -1,0 +1,6 @@
+.card-home-gradient {
+    background: var(--gradient-action) !important;
+    border: none !important;
+}
+.card-home-gradient h2, .card-home-gradient p { color: #ffffff !important; } /* Chữ trắng rõ nét trên nền xanh */
+.progress-track { background: rgba(255, 255, 255, 0.3) !important; border: none; }

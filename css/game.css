@@ -1,0 +1,44 @@
+/* --- 6.2 GAME / QUIZ TAB --- */
+.review-menu { display: flex; flex-direction: column; gap: 15px; }
+
+.review-card { background: var(--bg-card); border-radius: 16px; padding: 20px; display: flex; align-items: center; gap: 16px; box-shadow: var(--card-shadow); cursor: pointer; border: var(--card-border); transition: all 0.2s; }
+.review-card:hover { transform: translateY(-3px); border-color: var(--primary-color); }
+
+.review-icon { width: 60px; height: 60px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; flex-shrink: 0; }
+.bg-vocab { background: var(--gradient-vocab); }
+.bg-sentence { background: var(--gradient-sentence); }
+
+.review-info h3 { font-size: 1.1rem; color: var(--text-color); margin-bottom: 4px; font-weight: 700; }
+.review-info p { font-size: 0.85rem; color: var(--text-muted); }
+
+.quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.game-score { font-size: 1.2rem; font-weight: 800; color: var(--primary-color); background: white; padding: 8px 16px; border-radius: 12px; border: var(--card-border); box-shadow: var(--card-shadow); }
+
+/* Khung câu hỏi siêu dễ đọc */
+.quiz-question-card {
+    background: var(--bg-card);
+    padding: 25px 15px;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: var(--card-shadow);
+    border: var(--card-border);
+    margin-bottom: 15px;
+}
+
+#quiz-subtitle { font-size: 0.85rem; margin-bottom: 8px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+#question-word { font-size: 2.2rem; font-weight: 800; color: var(--primary-color); }
+
+.feedback-text { min-height: 0; margin-bottom: 10px; font-size: 1.1rem; }
+
+.options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; padding-bottom: 120px; }
+
+/* 4 nút đáp án cứng cáp, rõ nét */
+.option-btn {
+    padding: 16px 20px; font-size: 1.05rem; min-height: 64px; 
+    background-color: var(--bg-card); border: 2px solid #cbd5e1; border-bottom-width: 4px; 
+    border-radius: 16px; cursor: pointer; transition: all 0.1s ease; font-weight: 600; color: var(--text-color);
+    display: flex; justify-content: space-between; align-items: center; gap: 10px; text-align: left; line-height: 1.3;
+}
+.option-btn:active { transform: translateY(2px); border-bottom-width: 2px; }
+.option-btn.correct { background: #ecfdf5; border-color: var(--success-color); color: #047857; }
+.option-btn.wrong { background: #fef2f2; border-color: var(--danger-color); color: #b91c1c; }
