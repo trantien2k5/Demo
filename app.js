@@ -124,3 +124,57 @@ style.innerHTML = `
     @keyframes slideOutDown { from { transform: translateY(0); opacity: 1; } to { transform: translateY(100px); opacity: 0; } }
 `;
 document.head.appendChild(style);
+
+// ==========================================
+// HỆ THỐNG PHÍM TẮT (SHORTCUT MANAGER)
+// ==========================================
+const defaultShortcuts = {
+    opt1: '1',
+    opt2: '2',
+    opt3: '3',
+    opt4: '4',
+    next: 'enter',
+    audio: 's'
+};
+
+// Khởi tạo phím tắt nếu chưa có
+if (!localStorage.getItem('smartVocab_shortcuts')) {
+    localStorage.setItem('smartVocab_shortcuts', JSON.stringify(defaultShortcuts));
+}
+
+// Lắng nghe sự kiện bàn phím toàn cầu
+document.addEventListener('keydown', (e) => {
+    // Bỏ qua nếu người dùng đang gõ vào ô input tìm kiếm
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+    const shortcuts = JSON.parse(localStorage.getItem('smartVocab_shortcuts')) || defaultShortcuts;
+    let pressedKey = e.key.toLowerCase();
+    if (e.code === 'Space') pressedKey = 'space';
+
+    // Bắt sự kiện cho Tab Game
+    const quizArea = document.getElementById('quiz-area');
+    if (quizArea && !quizArea.classList.contains('hidden')) {
+        if (pressedKey === shortcuts.opt1.toLowerCase()) document.getElementById('opt-btn-0')?.click();
+        if (pressedKey === shortcuts.opt2.toLowerCase()) document.getElementById('opt-btn-1')?.click();
+        if (pressedKey === shortcuts.opt3.toLowerCase()) document.getElementById('opt-btn-2')?.click();
+        if (pressedKey === shortcuts.opt4.toLowerCase()) document.getElementById('opt-btn-3')?.click();
+        
+        if (pressedKey === shortcuts.next.toLowerCase()) {
+            const nextBtn = document.getElementById('next-question-btn');
+            if (nextBtn && !nextBtn.classList.contains('hidden') && !nextBtn.disabled) {
+                nextBtn.click();
+            }
+        }
+        
+        if (pressedKey === shortcuts.audio.toLowerCase()) {
+            // Tìm nút loa và mô phỏng click
+            const audioBtn = document.querySelector('.feedback-card button');
+            if(audioBtn) audioBtn.click();
+            else {
+                // Nếu chưa hiện feedback, đọc câu hỏi hiện tại
+                const text = document.getElementById('question-word').textContent;
+                if(window.playGameAudio) window.playGameAudio(text);
+            }
+        }
+    }
+});

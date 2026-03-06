@@ -3,205 +3,183 @@ import { DataManager } from '../../core/services/storage.js';
 export const GameTab = {
     render: () => {
         return `
-            <div id="review-menu-area" class="review-menu">
-                <h2 style="margin-bottom: 10px; color: var(--text-color);">Bạn muốn học gì?</h2>
+            <style>
+                /* Khung bọc ngoài cùng: Cao 100% và ép mọi thứ vào giữa tâm */
+                .game-container { 
+                    width: 100%; 
+                    height: 100%; 
+                    display: flex; 
+                    flex-direction: column; 
+                    align-items: center; /* Căn giữa theo chiều ngang */
+                    justify-content: center; /* Căn giữa theo chiều dọc */
+                }
+
+                .review-menu { display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; max-width: 800px; }
+                .review-card { background: var(--bg-card); border: 1px solid var(--card-border); border-radius: 20px; padding: 20px; display: flex; align-items: center; gap: 20px; box-shadow: var(--card-shadow); cursor: pointer; transition: all 0.2s ease; }
+                .review-card:hover { transform: translateY(-3px); border-color: var(--primary-color); }
+                .review-icon { width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; color: white; flex-shrink: 0; }
+                .bg-vocab { background: var(--gradient-vocab); }
+                .bg-sentence { background: var(--gradient-sentence); }
+                .review-info h3 { font-size: 1.2rem; color: var(--text-color); margin-bottom: 4px; font-weight: 800; }
+                .review-info p { font-size: 0.9rem; color: var(--text-muted); }
+
+                /* Khung trắc nghiệm: Giới hạn độ rộng để không bị dị dạng */
+                #quiz-area { 
+                    width: 100%; 
+                    max-width: 700px; 
+                    display: flex; 
+                    flex-direction: column; 
+                    justify-content: center;
+                }
+
+                .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-shrink: 0; }
+                .game-score { font-size: 1.2rem; font-weight: 800; color: var(--primary-color); background: var(--bg-card); padding: 8px 20px; border-radius: 12px; border: 1px solid var(--card-border); box-shadow: var(--card-shadow); }
                 
-                <div class="card" style="padding: 15px; margin-bottom: 5px; border: 2px solid var(--primary-color);">
-                    <h3 style="font-size: 1rem; color: var(--text-color); margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                        <i class="fa-solid fa-gear" style="color: #888;"></i> Chế độ Từ vựng
-                    </h3>
-                    <div class="filter-container" id="quiz-vocab-filter" style="margin-bottom: 15px;">
-                        <button class="filter-chip active" data-filter="all">Tất cả</button>
-                        <button class="filter-chip" data-filter="learning">Chưa thuộc</button>
-                        <button class="filter-chip" data-filter="learned">Đã thuộc</button>
-                    </div>
-                    
-                    <div class="review-card" id="btn-mode-vocab" style="margin: 0; padding: 12px; box-shadow: none; background: #f8f9fa; border: 1px solid #eee;">
-                        <div class="review-icon bg-vocab" style="width: 45px; height: 45px; font-size: 1.2rem;">
-                            <i class="fa-solid fa-spell-check"></i>
+                .quiz-question-card { background: var(--bg-card); padding: 20px 15px; border-radius: 24px; text-align: center; box-shadow: var(--card-shadow); border: 1px solid var(--card-border); margin-bottom: 15px; flex-shrink: 0; }
+                #quiz-subtitle { font-size: 0.85rem; color: var(--text-muted); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px; }
+                #question-word { font-size: 2.2rem; font-weight: 800; color: var(--primary-color); line-height: 1.2; }
+
+                .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; flex-shrink: 0; }
+                .option-btn { padding: 15px 20px; font-size: 1.05rem; background-color: var(--bg-card); border: 2px solid #cbd5e1; border-bottom-width: 4px; border-radius: 16px; cursor: pointer; transition: all 0.1s ease; font-weight: 700; color: var(--text-color); display: flex; justify-content: space-between; align-items: center; text-align: left; }
+                .option-btn:active:not(:disabled) { transform: translateY(2px); border-bottom-width: 2px; }
+                .option-btn.correct { background: #ecfdf5; border-color: #10b981; color: #047857; }
+                .option-btn.wrong { background: #fef2f2; border-color: #ef4444; color: #b91c1c; }
+
+                /* Thẻ kết quả bóp gọn padding để không trồi thanh cuộn */
+                #quiz-feedback { margin-top: 15px; animation: fadeIn 0.3s ease; width: 100%; flex-shrink: 0; }
+                .feedback-card { background: var(--bg-card); padding: 20px; border-radius: 20px; border: 2px solid var(--card-border); text-align: left; box-shadow: var(--card-shadow); width: 100%; }
+                
+                #next-question-btn { width: 100%; margin-top: 15px; height: 55px; font-size: 1.1rem; border-radius: 16px; transition: all 0.3s; flex-shrink: 0; }
+                #next-question-btn:disabled { background: #e2e8f0; color: #64748b; cursor: not-allowed; box-shadow: none; border: none; }
+
+                /* RESPONSIVE PC: Thu nhỏ margin/padding để chống scroll */
+                @media (min-width: 768px) {
+                    .review-menu { grid-template-columns: 1fr 1fr; gap: 20px; }
+                    .review-card { padding: 25px; flex-direction: column; text-align: center; }
+                    .quiz-question-card { padding: 30px 20px; margin-bottom: 20px; }
+                    #question-word { font-size: 2.8rem; }
+                    .options-grid { grid-template-columns: 1fr 1fr; gap: 15px; }
+                    .option-btn { font-size: 1.1rem; padding: 15px 20px; min-height: 70px; }
+                    .feedback-card { padding: 20px 25px; }
+                }
+            </style>
+
+            <div class="game-container">
+                <div id="game-menu" class="fade-in" style="width: 100%; max-width: 800px;">
+                    <h2 style="font-size: 1.5rem; color: var(--text-color); margin-bottom: 20px; text-align: center;">Chọn chế độ ôn tập</h2>
+                    <div class="review-menu">
+                        <div class="review-card" onclick="window.startQuiz('vocab')">
+                            <div class="review-icon bg-vocab"><i class="fa-solid fa-layer-group"></i></div>
+                            <div class="review-info">
+                                <h3>Ôn Từ Vựng</h3>
+                                <p>Đoán nghĩa và cách phát âm</p>
+                            </div>
                         </div>
-                        <div class="review-info">
-                            <h3 style="font-size: 1rem;">Bắt đầu Trắc nghiệm</h3>
+                        <div class="review-card" onclick="window.startQuiz('sentence')">
+                            <div class="review-icon bg-sentence"><i class="fa-solid fa-comments"></i></div>
+                            <div class="review-info">
+                                <h3>Dịch Mẫu Câu</h3>
+                                <p>Luyện phản xạ giao tiếp</p>
+                            </div>
                         </div>
-                        <i class="fa-solid fa-chevron-right" style="margin-left: auto; color: var(--primary-color);"></i>
                     </div>
                 </div>
 
-                <div class="review-card" id="btn-mode-sentence">
-                    <div class="review-icon bg-sentence">
-                        <i class="fa-solid fa-comments"></i>
+                <div id="quiz-area" class="hidden fade-in">
+                    <div class="quiz-header">
+                        <button class="icon-action-btn" onclick="window.backToGameMenu()"><i class="fa-solid fa-arrow-left"></i></button>
+                        <div class="game-score"><i class="fa-solid fa-star" style="color:#fbbf24;"></i> <span id="score-display">0</span></div>
                     </div>
-                    <div class="review-info">
-                        <h3>Phản xạ Giao tiếp</h3>
-                        <p>Luyện tập dịch nhanh các mẫu câu</p>
+
+                    <div class="quiz-question-card">
+                        <div id="quiz-subtitle">Câu hỏi</div>
+                        <div id="question-word">...</div>
                     </div>
-                    <i class="fa-solid fa-chevron-right" style="margin-left: auto; color: #ccc;"></i>
-                </div>
-            </div>
 
-            <div id="quiz-area" class="hidden">
-                <div class="quiz-header">
-                    <button class="back-btn" id="btn-back-menu"><i class="fa-solid fa-arrow-left"></i></button>
-                    <div class="game-score" style="margin: 0;">Điểm: <span id="current-score">0</span></div>
+                    <div id="answer-options" class="options-grid"></div>
+                    <div id="quiz-feedback" class="hidden"></div>
+                    <button id="next-question-btn" class="action-btn hidden" onclick="window.loadNextQuestion()">Tiếp tục <i class="fa-solid fa-arrow-right"></i></button>
                 </div>
-
-                <div class="quiz-question-card">
-                    <p id="quiz-subtitle" style="color: #888; font-size: 0.9rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px;">Chọn nghĩa đúng</p>
-                    <div class="game-word" id="question-word" style="font-size: 1.5rem; margin: 0; line-height: 1.4;">Loading...</div>
-                </div>
-                
-                <div class="feedback-text" id="game-feedback" style="margin-bottom: 15px;"></div>
-                
-                <div class="options-grid" id="answer-options">
-                </div>
-
-                <button id="next-question-btn" class="action-btn hidden">Tiếp tục <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i></button>
             </div>
         `;
     },
-    
+
     init: () => {
-        // Khai báo hàm phát âm thanh toàn cục để HTML bên trong có thể gọi lại bằng nút bấm
-        window.playGameAudio = function(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'en-US'; 
-                utterance.rate = 0.9;     
-                window.speechSynthesis.speak(utterance);
+        let currentMode = 'vocab';
+        let currentItem = null;
+        let currentScore = 0;
+        let countdownTimer = null;
+
+        window.backToGameMenu = () => {
+            clearInterval(countdownTimer);
+            document.getElementById('quiz-area').classList.add('hidden');
+            document.getElementById('game-menu').classList.remove('hidden');
+            currentScore = 0;
+            document.getElementById('score-display').textContent = currentScore;
+        };
+
+        window.startQuiz = (mode) => {
+            currentMode = mode;
+            document.getElementById('game-menu').classList.add('hidden');
+            document.getElementById('quiz-area').classList.remove('hidden');
+            window.loadNextQuestion();
+        };
+
+        window.loadNextQuestion = () => {
+            clearInterval(countdownTimer); 
+            const data = currentMode === 'vocab' ? DataManager.getVocabList() : DataManager.getSentenceList();
+            if (data.length < 4) {
+                alert("Cần ít nhất 4 mục dữ liệu để chơi!");
+                window.backToGameMenu();
+                return;
+            }
+
+            document.getElementById('answer-options').classList.remove('hidden');
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('quiz-feedback').innerHTML = '';
+            document.getElementById('next-question-btn').classList.add('hidden');
+            document.getElementById('quiz-subtitle').textContent = currentMode === 'vocab' ? 'TỪ VỰNG' : 'MẪU CÂU';
+
+            const randomIndex = Math.floor(Math.random() * data.length);
+            currentItem = data[randomIndex];
+            
+            const questionWordEl = document.getElementById('question-word');
+            questionWordEl.textContent = currentMode === 'vocab' ? currentItem.word : currentItem.vi;
+            if(currentMode === 'sentence') {
+                questionWordEl.style.fontSize = '1.4rem';
+            } else {
+                questionWordEl.style.fontSize = ''; 
+            }
+
+            const correctAnswer = currentMode === 'vocab' ? currentItem.meaning : currentItem.en;
+            let options = [correctAnswer];
+
+            while (options.length < 4) {
+                const randomOpt = data[Math.floor(Math.random() * data.length)];
+                const optText = currentMode === 'vocab' ? randomOpt.meaning : randomOpt.en;
+                if (!options.includes(optText)) options.push(optText);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            const optionsContainer = document.getElementById('answer-options');
+            optionsContainer.innerHTML = '';
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = `<span class="option-text">${opt}</span><span class="option-icon"></span>`;
+                btn.onclick = function() { handleAnswer(this, opt, correctAnswer); };
+                optionsContainer.appendChild(btn);
+            });
+
+            if(currentMode === 'vocab' && localStorage.getItem('smartVocab_autoSpeak') !== 'false') {
+                window.playGameAudio(currentItem.word);
             }
         };
 
-        const menuArea = document.getElementById('review-menu-area');
-        const quizArea = document.getElementById('quiz-area');
-        const btnBack = document.getElementById('btn-back-menu');
-        
-        const btnModeVocab = document.getElementById('btn-mode-vocab');
-        const btnModeSentence = document.getElementById('btn-mode-sentence');
-        const filterChips = document.querySelectorAll('#quiz-vocab-filter .filter-chip');
-        
-        const questionWordEl = document.getElementById('question-word');
-        const quizSubtitleEl = document.getElementById('quiz-subtitle');
-        const answerOptionsEl = document.getElementById('answer-options');
-        const nextBtnEl = document.getElementById('next-question-btn');
-        const feedbackEl = document.getElementById('game-feedback');
-        const scoreEl = document.getElementById('current-score');
-
-        let currentScore = 0;
-        let currentMode = 'vocab'; 
-        let vocabFilterMode = 'all'; 
-        let currentDataPool = [];    
-        let currentItem = null;
-
-        filterChips.forEach(chip => {
-            chip.addEventListener('click', (e) => {
-                filterChips.forEach(c => c.classList.remove('active'));
-                e.currentTarget.classList.add('active');
-                vocabFilterMode = e.currentTarget.getAttribute('data-filter');
-            });
-        });
-
-        function startQuiz(mode) {
-            currentMode = mode;
-            currentScore = 0;
-            scoreEl.textContent = currentScore;
-
-            // HIỆU ỨNG BẮN PHÁO HOA TUNG TÓE 🎆
-                if (window.confetti) {
-                    confetti({
-                        particleCount: 100, // Số lượng hạt
-                        spread: 70,         // Độ văng xa
-                        origin: { y: 0.6 }, // Vị trí bắn (Từ dưới nổ lên)
-                        colors: ['#05cd99', '#3b82f6', '#fbbf24'] // Màu sắc pháo
-                    });
-                }
-            
-            if (mode === 'vocab') {
-                const fullVocab = DataManager.getVocabList();
-                currentDataPool = fullVocab.filter(item => vocabFilterMode === 'all' || item.status === vocabFilterMode);
-                
-                if (currentDataPool.length === 0) {
-                    alert("Không có từ vựng nào trong mục này. Vui lòng chọn chế độ khác!");
-                    return; 
-                }
-                quizSubtitleEl.textContent = "Chọn nghĩa đúng của từ";
-            } else {
-                currentDataPool = DataManager.getSentenceList();
-                if (currentDataPool.length === 0) return;
-                quizSubtitleEl.textContent = "Dịch câu sau sang tiếng Việt";
-            }
-
-            menuArea.classList.add('hidden');
-            quizArea.classList.remove('hidden');
-            generateQuestion();
-        }
-
-        btnModeVocab.addEventListener('click', () => startQuiz('vocab'));
-        btnModeSentence.addEventListener('click', () => startQuiz('sentence'));
-
-        btnBack.addEventListener('click', () => {
-            quizArea.classList.add('hidden');
-            menuArea.classList.remove('hidden');
-            // Bọc thêm lớp khiên an toàn trước khi tắt loa
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); 
-            }
-        });
-
-        function shuffleArray(array) {
-            const newArr = [...array];
-            for (let i = newArr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-            }
-            return newArr;
-        }
-
-        function generateQuestion() {
-            nextBtnEl.classList.add('hidden');
-            feedbackEl.innerHTML = "";
-            answerOptionsEl.innerHTML = "";
-            answerOptionsEl.classList.remove('hidden');
-            
-            const questionKey = currentMode === 'vocab' ? 'word' : 'en';
-            const answerKey = currentMode === 'vocab' ? 'meaning' : 'vi';
-
-            currentItem = currentDataPool[Math.floor(Math.random() * currentDataPool.length)];
-            questionWordEl.textContent = currentItem[questionKey];
-
-            const globalData = currentMode === 'vocab' ? DataManager.getVocabList() : DataManager.getSentenceList();
-            
-            let wrongOptions = globalData.filter(item => item[questionKey] !== currentItem[questionKey]);
-            wrongOptions = shuffleArray(wrongOptions).slice(0, 3);
-            
-            let correctText = currentItem[answerKey] || "Chưa có nghĩa";
-            let wrongTexts = wrongOptions.map(item => item[answerKey] || "Chưa có nghĩa");
-
-            let options = [correctText, ...wrongTexts];
-            options = shuffleArray(options);
-
-            options.forEach(optionText => {
-                const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                btn.innerHTML = `
-                    <span class="option-text">${optionText}</span>
-                    <span class="option-icon"></span>
-                `;
-                
-                btn.addEventListener('click', function() {
-                    handleAnswer(this, optionText, correctText);
-                });
-                
-                answerOptionsEl.appendChild(btn);
-            });
-        }
-
         function handleAnswer(selectedBtn, selectedText, correctAnswer) {
-            const allBtns = answerOptionsEl.querySelectorAll('.option-btn');
-            allBtns.forEach(btn => {
-                btn.disabled = true;
-                btn.style.pointerEvents = 'none'; 
-            });
+            const allBtns = document.getElementById('answer-options').querySelectorAll('.option-btn');
+            allBtns.forEach(btn => { btn.disabled = true; btn.style.pointerEvents = 'none'; });
 
             const isCorrect = selectedText === correctAnswer;
             let feedbackTitle = '';
@@ -209,19 +187,17 @@ export const GameTab = {
             if (isCorrect) {
                 selectedBtn.classList.add('correct');
                 selectedBtn.querySelector('.option-icon').innerHTML = '<i class="fa-solid fa-check"></i>';
-                feedbackTitle = `<div style="color: var(--success-color); font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                                    <i class="fa-solid fa-circle-check" style="font-size: 1.3rem;"></i> 
-                                    <span>Chính xác! ${currentMode === 'vocab' ? '(Thăng cấp 🚀)' : ''}</span>
-                                 </div>`;
+                feedbackTitle = `<div style="color: #10b981; font-weight: 800; font-size: 1.3rem; margin-bottom: 12px; text-align: center;"><i class="fa-solid fa-circle-check"></i> Chính xác!</div>`;
                 currentScore += 10;
-                scoreEl.textContent = currentScore;
+                document.getElementById('score-display').textContent = currentScore;
+                
+                if (window.confetti) {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#10b981', '#3b82f6', '#fbbf24'] });
+                }
             } else {
                 selectedBtn.classList.add('wrong');
                 selectedBtn.querySelector('.option-icon').innerHTML = '<i class="fa-solid fa-xmark"></i>';
-                feedbackTitle = `<div style="color: var(--danger-color); font-weight: bold; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
-                                    <i class="fa-solid fa-circle-xmark" style="font-size: 1.3rem;"></i> 
-                                    <span>Sai rồi! ${currentMode === 'vocab' ? '(Về Cấp 1 🔻)' : ''}</span>
-                                 </div>`;
+                feedbackTitle = `<div style="color: #ef4444; font-weight: 800; font-size: 1.3rem; margin-bottom: 12px; text-align: center;"><i class="fa-solid fa-circle-xmark"></i> Sai rồi, xem kỹ lại nhé!</div>`;
                 
                 allBtns.forEach(btn => {
                     if (btn.querySelector('.option-text').textContent === correctAnswer) {
@@ -231,58 +207,85 @@ export const GameTab = {
                 });
             }
 
-            // XỬ LÝ NGAY LẬP TỨC KHÔNG DELAY
             const textToPlay = currentMode === 'vocab' ? currentItem.word : currentItem.en;
             window.playGameAudio(textToPlay);
 
-            if (currentMode === 'vocab') {
-                DataManager.updateVocabLevel(currentItem.word, isCorrect);
-            }
+            if (currentMode === 'vocab') DataManager.updateVocabLevel(currentItem.word, isCorrect);
 
             let fullDataHtml = '';
             if (currentMode === 'vocab') {
                 const safeWord = currentItem.word.replace(/'/g, "\\'");
                 fullDataHtml = `
-                    <div class="card fade-in" style="margin-top: 0; padding: 15px; text-align: left; border-left: 5px solid var(--primary-color);">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
+                    <div class="feedback-card">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                             <div>
-                                <span style="font-size: 1.3rem; font-weight: 800; color: var(--text-color);">${currentItem.word}</span>
-                                <span style="font-size: 0.85rem; font-style: italic; color: var(--primary-color); margin-left: 6px; background: #e0f2fe; padding: 2px 8px; border-radius: 6px;">${currentItem.type || ''}</span>
+                                <span style="font-size: 1.4rem; font-weight: 800; color: var(--text-color);">${currentItem.word}</span>
+                                <span style="font-size: 0.85rem; color: #3b82f6; background: rgba(59,130,246,0.1); padding: 3px 8px; border-radius: 6px; margin-left: 8px; font-weight: 700;">${currentItem.type}</span>
                             </div>
-                            <button class="icon-action-btn" onclick="window.playGameAudio('${safeWord}')" style="margin:0; flex-shrink: 0; width: 35px; height: 35px;">
-                                <i class="fa-solid fa-volume-high"></i>
+                            <button onclick="window.playGameAudio('${safeWord}')" style="margin:0; width: 38px; height: 38px; border-radius: 10px; background: rgba(14, 165, 233, 0.1); color: var(--primary-color); border: none; cursor: pointer; transition: 0.2s;">
+                                <i class="fa-solid fa-volume-high" style="font-size: 1rem;"></i>
                             </button>
                         </div>
-                        <div style="font-size: 0.9rem; color: var(--text-muted); font-family: monospace; margin-bottom: 8px;">${currentItem.phonetic || ''}</div>
-                        <div style="font-size: 1rem; color: var(--text-color); font-weight: 600; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed #e2e8f0;">${currentItem.meaning}</div>
-                        ${currentItem.example ? `
-                            <div style="background: #f8fafc; padding: 10px; border-radius: 8px;">
-                                <div style="font-size: 0.95rem; font-style: italic; color: var(--text-color); margin-bottom: 4px;">"${currentItem.example}"</div>
-                                <div style="font-size: 0.85rem; color: var(--text-muted);">${currentItem.example_vi || ''}</div>
-                            </div>
-                        ` : ''}
+                        <div style="color: var(--text-muted); font-family: monospace; font-size: 1rem; margin-bottom: 10px;">${currentItem.phonetic}</div>
+                        <div style="font-weight: 800; color: var(--text-color); font-size: 1.15rem; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px dashed var(--card-border);">${currentItem.meaning}</div>
+                        <div style="background: rgba(0,0,0,0.03); padding: 12px; border-radius: 10px; border-left: 4px solid var(--primary-color);">
+                            <div style="font-style: italic; color: var(--text-color); font-size: 0.95rem; margin-bottom: 4px;">"${currentItem.example}"</div>
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">${currentItem.example_vi}</div>
+                        </div>
                     </div>
                 `;
             } else {
                 const safeSentence = currentItem.en.replace(/'/g, "\\'");
                 fullDataHtml = `
-                    <div class="card fade-in" style="margin-top: 0; padding: 15px; text-align: left; border-left: 5px solid var(--primary-color);">
+                    <div class="feedback-card">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                            <div style="font-size: 1.1rem; font-weight: bold; color: var(--text-color); margin-bottom: 10px; padding-right: 15px;">${currentItem.en}</div>
-                            <button class="icon-action-btn" onclick="window.playGameAudio('${safeSentence}')" style="margin:0; flex-shrink: 0; width: 35px; height: 35px;">
-                                <i class="fa-solid fa-volume-high"></i>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: var(--text-color); margin-bottom: 12px; padding-right: 15px; line-height: 1.4;">${currentItem.en}</div>
+                            <button onclick="window.playGameAudio('${safeSentence}')" style="margin:0; flex-shrink: 0; width: 38px; height: 38px; border-radius: 10px; background: rgba(14, 165, 233, 0.1); color: var(--primary-color); border: none; cursor: pointer;">
+                                <i class="fa-solid fa-volume-high" style="font-size: 1rem;"></i>
                             </button>
                         </div>
-                        <div style="font-size: 1rem; color: var(--text-muted); padding-top: 10px; border-top: 1px dashed #e2e8f0;">${currentItem.vi}</div>
+                        <div style="font-size: 1rem; color: var(--text-muted); padding-top: 12px; border-top: 1px dashed var(--card-border); line-height: 1.4;">${currentItem.vi}</div>
                     </div>
                 `;
             }
 
-            answerOptionsEl.classList.add('hidden');
+            document.getElementById('answer-options').classList.add('hidden');
+            const feedbackEl = document.getElementById('quiz-feedback');
             feedbackEl.innerHTML = feedbackTitle + fullDataHtml;
-            nextBtnEl.classList.remove('hidden');
+            feedbackEl.classList.remove('hidden');
+            
+            const nextBtn = document.getElementById('next-question-btn');
+            nextBtn.classList.remove('hidden');
+
+            if (!isCorrect) {
+                nextBtn.disabled = true;
+                let timeLeft = 3; 
+                nextBtn.innerHTML = `Vui lòng xem lại đáp án (${timeLeft}s)...`;
+                
+                countdownTimer = setInterval(() => {
+                    timeLeft--;
+                    if (timeLeft > 0) {
+                        nextBtn.innerHTML = `Vui lòng xem lại đáp án (${timeLeft}s)...`;
+                    } else {
+                        clearInterval(countdownTimer);
+                        nextBtn.disabled = false;
+                        nextBtn.innerHTML = `Đã hiểu, Tiếp tục <i class="fa-solid fa-arrow-right"></i>`;
+                    }
+                }, 1000);
+            } else {
+                nextBtn.disabled = false;
+                nextBtn.innerHTML = `Tiếp tục <i class="fa-solid fa-arrow-right"></i>`;
+            }
         }
 
-        nextBtnEl.addEventListener('click', generateQuestion);
+        window.playGameAudio = (text) => {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
+        };
     }
 };

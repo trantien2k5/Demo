@@ -12,3 +12,11 @@
 
 .back-btn { background: #f1f5f9; border: none; width: 40px; height: 40px; border-radius: 50%; color: var(--text-color); font-size: 1.2rem; cursor: pointer; transition: background 0.2s; }
 .back-btn:hover { background: #e2e8f0; }
+
+@media (min-width: 768px) {
+    .action-btn {
+        max-width: 400px; /* Nút bấm không bao giờ dài quá 400px */
+        margin-left: auto !important;
+        margin-right: auto !important; /* Căn giữa nút */
+    }
+}

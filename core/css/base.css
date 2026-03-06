@@ -7,12 +7,11 @@
 }
 
 body {
-    background-image: var(--bg-app);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    background: var(--bg-app, #f4f7f6);
+    color: var(--text-color, #1e293b);
+    width: 100vw;
     height: 100vh;
-    height: 100dvh;
+    overflow: hidden; /* Khóa cuộn trang tổng, chỉ cho cuộn nội dung bên trong */
 }
 
 .hidden { display: none !important; }
