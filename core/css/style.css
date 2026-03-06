@@ -1,0 +1,10 @@
+/* Các file dùng chung (cùng thư mục) */
+@import url('./variables.css');
+@import url('./base.css');
+@import url('./layout.css');
+@import url('./components.css');
+
+/* Các file tính năng (Trỏ ra ngoài thư mục core rồi chui vào features) */
+@import url('../../features/home/home.css');
+@import url('../../features/library/library.css');
+@import url('../../features/game/game.css');
